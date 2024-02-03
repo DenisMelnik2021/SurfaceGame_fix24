@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 public class GameView extends SurfaceView implements Runnable {
 
+    boolean collision;
     volatile boolean playing;
     private Thread gameThread = null;
     private Player player;
@@ -25,6 +26,7 @@ public class GameView extends SurfaceView implements Runnable {
     private SurfaceHolder surfaceHolder;
 
     private ArrayList<Star> stars = new ArrayList<Star>();
+    private ArrayList<Enemy> enemyes = new ArrayList<Enemy>();
 
     int screenX;
     int countMisses;
@@ -60,6 +62,12 @@ public class GameView extends SurfaceView implements Runnable {
         for (int i = 0; i < starNums; i++) {
             Star s = new Star(screenX, screenY);
             stars.add(s);
+        }
+
+        int enemyNums = 4;
+        for (int i = 0; i < enemyNums; i++) {
+            Enemy e = new Enemy(context, screenX, screenY);
+            enemyes.add(e);
         }
 
         this.screenX = screenX;
@@ -129,6 +137,11 @@ public class GameView extends SurfaceView implements Runnable {
                 canvas.drawPoint(s.getX(), s.getY(), paint);
             }
 
+            for (Enemy e : enemyes) {
+                paint.setStrokeWidth(e.getEnemyWidth());
+                canvas.drawBitmap(e.getBitmap(), e.getX(), e.getY(), paint);
+            }
+
 
             paint.setTextSize(30);
             canvas.drawText("Очки: "+score,100,50,paint);
@@ -159,6 +172,7 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void update() {
+        collision();
         score++;
 
         player.update();
@@ -166,6 +180,17 @@ public class GameView extends SurfaceView implements Runnable {
 
         for (Star s : stars) {
             s.update(player.getSpeed());
+        }
+        for (Enemy e : enemyes) {
+            e.update(player.getSpeed());
+        }
+    }
+
+    private void collision() {
+        for (Enemy e : enemyes) {
+            if (player.getDetectCollision().intersect(e.getDetectCollision())) {
+                isGameOver = true;
+            }
         }
     }
 
